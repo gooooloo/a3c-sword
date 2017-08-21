@@ -218,7 +218,7 @@ class EnvExtension():
         pos1 = self.last_pos
         pos2 = self._my_poses()[:2]
         d = abs(pos1[0] - pos2[0]), abs(pos1[1] - pos2[1])
-        return d[0] > 1e-5 and d[1] > 1e-5
+        return d[0] > 1e-5 or d[1] > 1e-5
 
     def reset(self):
         self._ep_count += 1
