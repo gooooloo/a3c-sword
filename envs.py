@@ -32,7 +32,7 @@ _N_AVERAGE = 100
 
 VSTR = 'V0'
 
-OB_SPACE_SHAPE = [6]
+OB_SPACE_SHAPE = [4]
 
 
 GAME_NAME = config.GAME_NAME
@@ -190,8 +190,7 @@ class EnvExtension():
 
     def _my_state(self):
         p = self._my_poses()
-        h = self._my_get_hps()
-        return [p[0], p[1], p[2], p[3], h[0], h[1]]
+        return [p[0], p[1], p[2], p[3]]
 
     def _my_poses(self):
         map = self.game.map
