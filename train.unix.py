@@ -23,9 +23,9 @@ def create_commands(session, num_workers, log_dir, shell='bash'):
         sys.executable, 'worker.py'
     ]
 
-    cmds_map = [new_cmd(session, "ps", base_cmd + ["--job-name", "ps"])]
+    cmds_map = [new_cmd(session, "ps", base_cmd + ["--job-name", "ps", "--num-workers", str(num_workers)])]
     for i in range(num_workers):
-        cmds_map += [new_cmd(session, "w-%d" % i, base_cmd + ["--job-name", "worker", "--task", str(i)])]
+        cmds_map += [new_cmd(session, "w-%d" % i, base_cmd + ["--job-name", "worker", "--task", str(i), "--num-workers", str(num_workers)])]
 
     cmds_map += [new_cmd(session, "tb", ["tensorboard", "--logdir", log_dir, "--port", "{}".format(TB_PORT)])]
     cmds_map += [new_cmd(session, "htop", ["htop"])]
