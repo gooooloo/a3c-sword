@@ -30,7 +30,7 @@ VISUALISED_WORKERS = []  # e.g. [0] or [1,2]
 
 _N_AVERAGE = 100
 
-VSTR = 'V0'
+VSTR = 'V3'
 
 OB_SPACE_SHAPE = [4]
 
