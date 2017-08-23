@@ -30,9 +30,8 @@ VISUALISED_WORKERS = []  # e.g. [0] or [1,2]
 
 _N_AVERAGE = 100
 
-VSTR = 'V0'
+VSTR = 'V4'
 
-OB_SPACE_SHAPE = [4]
 
 
 GAME_NAME = config.GAME_NAME
@@ -47,7 +46,7 @@ config.GAME_PARAMS.max_steps = 300
 
 config.NUM_PLAYERS = 1
 
-config.NUM_NPC = 1
+config.NUM_NPC = 9
 
 config.PLAYER_INIT_RADIUS = (0.0, 0.0)
 
@@ -117,6 +116,7 @@ config.BASE_NPC = edict(
     skills=config.NPC_SKILL_LIST
 )
 
+OB_SPACE_SHAPE = [2 + 2 * config.NUM_NPC]
 
 def myextension(cls):
 
@@ -186,11 +186,11 @@ class SerializerExtension():
 
 @myextension(EnvironmentGym)
 class EnvExtension():
-    def _init_action_space(self): return spaces.Discrete(9)
+    def _init_action_space(self): return spaces.Discrete(8 + config.NUM_NPC)
 
     def _my_state(self):
         p = self._my_poses()
-        return [p[0], p[1], p[2], p[3]]
+        return p
 
     def _my_poses(self):
         map = self.game.map
@@ -199,19 +199,23 @@ class EnvExtension():
         pp0 = player.attribute.position[0]/max_x
         pp1 = player.attribute.position[1]/max_y
 
-        if len(npcs) == 0:
-            delta = 0, 0
-        else:
-            delta = npcs[0].attribute.position - player.attribute.position  # [2]
+        ret = [pp0, pp1]
+        for _npc in npcs:
+            delta = _npc.attribute.position - player.attribute.position  # [2]
             delta[0] = delta[0] / max_x
             delta[1] = delta[1] / max_x
+            ret.append(delta[0])
+            ret.append(delta[1])
 
-        return pp0, pp1, delta[0], delta[1]
+        for _ in range(len(ret), OB_SPACE_SHAPE[0]):
+            ret.append(0)
+
+        return ret
 
     def _my_get_hps(self):
         map = self.game.map
         player, npcs = map.players[0], map.npcs
-        return player.attribute.hp / player.attribute.max_hp, sum([o.attribute.hp / o.attribute.max_hp for o in npcs])
+        return player.attribute.hp / player.attribute.max_hp, sum([o.attribute.hp / o.attribute.max_hp for o in npcs]) / config.NUM_NPC
 
     def _my_did_I_move(self):
         pos1 = self.last_pos
@@ -229,10 +233,11 @@ class EnvExtension():
 
     def step(self, act):
         self.last_hps = self._my_get_hps()
-        self.last_act = act
         self.last_pos = self._my_poses()[:2]
 
-        _, r, t, _ = self.step_orig((act, self.game.map.npcs[0]))
+        self.last_target = self.game.map.npcs[act - 8] if act >= 8 and act - 8 < len(self.game.map.npcs) else None
+        self.last_act = act if act < 8 else 8
+        _, r, t, _ = self.step_orig((self.last_act, self.last_target))
 
         self._ep_steps += 1
         self._ep_rewards.append(r)
@@ -259,8 +264,9 @@ class EnvExtension():
         r_attack = -delta_hps[1]  # -1 -> 1
         r_defense = delta_hps[0]  # -1 -> -1
         r_edge = -1 if self.last_act < 8 and not self._my_did_I_move() else 0
+        r_wrong_target = -1 if self.last_act == 8 and self.last_target is None else 0
 
-        return r_attack + r_defense + r_edge
+        return r_attack + r_defense + r_edge + r_wrong_target
 
 
 def create_env(unused):
