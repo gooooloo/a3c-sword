@@ -46,7 +46,8 @@ config.GAME_PARAMS.max_steps = 300
 
 config.NUM_PLAYERS = 1
 
-config.NUM_NPC = 9
+config.NUM_NPC = 2
+config.NUM_NPC_MAX = 9
 
 config.PLAYER_INIT_RADIUS = (0.0, 0.0)
 
@@ -116,7 +117,7 @@ config.BASE_NPC = edict(
     skills=config.NPC_SKILL_LIST
 )
 
-OB_SPACE_SHAPE = [2 + 2 * config.NUM_NPC]
+OB_SPACE_SHAPE = [2 + 2 * config.NUM_NPC_MAX]
 
 def myextension(cls):
 
@@ -186,7 +187,7 @@ class SerializerExtension():
 
 @myextension(EnvironmentGym)
 class EnvExtension():
-    def _init_action_space(self): return spaces.Discrete(8 + config.NUM_NPC)
+    def _init_action_space(self): return spaces.Discrete(8 + config.NUM_NPC_MAX)
 
     def _my_state(self):
         p = self._my_poses()
