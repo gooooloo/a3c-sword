@@ -48,8 +48,8 @@ class LSTMPolicy(object):
     def __init__(self, ob_space, ac_space):
         self.x = x = tf.placeholder(tf.float32, [None] + list(ob_space))
 
-        x = linear(x, 16, "fc1", normalized_columns_initializer(0.01))
-        x = linear(x, 16, "fc2", normalized_columns_initializer(0.01))
+        x = linear(x, 256, "fc1", normalized_columns_initializer(0.01))
+        x = linear(x, 256, "fc2", normalized_columns_initializer(0.01))
         self.logits = linear(x, ac_space, "action", normalized_columns_initializer(0.01))
         self.vf = tf.reshape(linear(x, 1, "value", normalized_columns_initializer(1.0)), [-1])
         self.sample = categorical_sample(self.logits, ac_space)[0, :]
