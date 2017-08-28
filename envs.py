@@ -2,6 +2,7 @@ import gym
 import logging
 from collections import deque
 import numpy as np
+import random
 
 
 
@@ -30,7 +31,7 @@ VISUALISED_WORKERS = []  # e.g. [0] or [1,2]
 
 _N_AVERAGE = 100
 
-VSTR = 'V4'
+VSTR = 'V6'
 
 
 
@@ -200,18 +201,21 @@ class EnvExtension():
         pp0 = player.attribute.position[0]/max_x
         pp1 = player.attribute.position[1]/max_y
 
-        ret = [pp0, pp1]
+        ret = []
         for _npc in npcs:
             delta = _npc.attribute.position - player.attribute.position  # [2]
             delta[0] = delta[0] / max_x
             delta[1] = delta[1] / max_x
             ret.append(delta[0])
             ret.append(delta[1])
+        random.shuffle(ret)
 
-        for _ in range(len(ret), OB_SPACE_SHAPE[0]):
+        for _ in range(len(ret), OB_SPACE_SHAPE[0] - 2):
             ret.append(0)
 
-        return ret
+        tmp = [pp0, pp1]
+        tmp.extend(ret)
+        return tmp
 
     def _my_get_hps(self):
         map = self.game.map
