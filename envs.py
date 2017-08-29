@@ -31,7 +31,7 @@ VISUALISED_WORKERS = []  # e.g. [0] or [1,2]
 
 _N_AVERAGE = 100
 
-VSTR = 'V6'
+VSTR = 'V7'
 
 
 
@@ -201,21 +201,20 @@ class EnvExtension():
         pp0 = player.attribute.position[0]/max_x
         pp1 = player.attribute.position[1]/max_y
 
-        ret = []
+        ret = [0] * OB_SPACE_SHAPE[0]
+        ret[0] = pp0
+        ret[1] = pp1
+
         for _npc in npcs:
             delta = _npc.attribute.position - player.attribute.position  # [2]
             delta[0] = delta[0] / max_x
             delta[1] = delta[1] / max_x
-            ret.append(delta[0])
-            ret.append(delta[1])
-        random.shuffle(ret)
+            idx = self._state_idx_of_npc_by_id[_npc.attribute.id]
+            idx = 2 + idx * 2  # 2 num per npc
+            ret[idx] = delta[0]
+            ret[idx + 1] = delta[1]
 
-        for _ in range(len(ret), OB_SPACE_SHAPE[0] - 2):
-            ret.append(0)
-
-        tmp = [pp0, pp1]
-        tmp.extend(ret)
-        return tmp
+        return ret
 
     def _my_get_hps(self):
         map = self.game.map
@@ -232,7 +231,14 @@ class EnvExtension():
         self._ep_count += 1
         self._ep_steps = 0
         self._ep_rewards = []
+        self._state_idx_of_npc_by_id = {}
+
         self.reset_orig()
+
+        # 打乱npc在state里的次序
+        idx = random.sample(range(config.NUM_NPC_MAX), config.NUM_NPC)
+        for i, _npc in enumerate(self.game.map.npcs):
+            self._state_idx_of_npc_by_id[_npc.attribute.id] = idx[i]
 
         return self._my_state()
 
@@ -258,7 +264,6 @@ class EnvExtension():
             i['{}/aver_rewards_{}'.format(VSTR, _N_AVERAGE)] = np.average(self._rewards_last_n_eps)
 
             print(i)
-
 
         return self._my_state(), r, t, i
 
