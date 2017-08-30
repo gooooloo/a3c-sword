@@ -30,7 +30,7 @@ VISUALISED_WORKERS = []  # e.g. [0] or [1,2]
 
 _N_AVERAGE = 100
 
-VSTR = 'V0'
+VSTR = 'V3.3.1'
 
 OB_SPACE_SHAPE = [4]
 
@@ -258,7 +258,7 @@ class EnvExtension():
 
         r_attack = -delta_hps[1]  # -1 -> 1
         r_defense = delta_hps[0]  # -1 -> -1
-        r_edge = -1000 if self.last_act < 8 and not self._my_did_I_move() else 0
+        r_edge = -10000 if self.last_act < 8 and not self._my_did_I_move() else 0
 
         return r_attack + r_defense + r_edge
 
