@@ -30,9 +30,10 @@ VISUALISED_WORKERS = []  # e.g. [0] or [1,2]
 
 _N_AVERAGE = 100
 
-VSTR = 'V3.4'
+VSTR = 'V3.5'
 
-OB_SPACE_SHAPE = [4]
+ACT_LENGTH_IN_STATE = 40
+OB_SPACE_SHAPE = [4 + ACT_LENGTH_IN_STATE]
 
 
 GAME_NAME = config.GAME_NAME
@@ -190,7 +191,9 @@ class EnvExtension():
 
     def _my_state(self):
         p = self._my_poses()
-        return [p[0], p[1], p[2], p[3]]
+        ret = [p[0], p[1], p[2], p[3]]
+        ret.extend(self._ep_actions)
+        return ret
 
     def _my_poses(self):
         map = self.game.map
@@ -223,6 +226,8 @@ class EnvExtension():
         self._ep_count += 1
         self._ep_steps = 0
         self._ep_rewards = []
+        self._ep_actions = deque(maxlen=ACT_LENGTH_IN_STATE)
+        for _ in range(ACT_LENGTH_IN_STATE): self._ep_actions.append(0)
         self.reset_orig()
 
         return self._my_state()
@@ -236,6 +241,8 @@ class EnvExtension():
 
         self._ep_steps += 1
         self._ep_rewards.append(r)
+        self._ep_actions.append(1 if act == 8 else 0)
+
         i = {}
         if t:
             self._steps_last_n_eps.append(self._ep_steps)
