@@ -119,11 +119,12 @@ runner appends the policy to the queue.
         rollout = PartialRollout()
 
         for _ in range(num_local_steps):
-            fetched = policy.act(last_state, *last_features)
-            action, value_, features = fetched[0], fetched[1], fetched[2:]
+            fetched = policy.act_determate(last_state, *last_features)
+            action, value_, p, features = fetched[0], fetched[1], fetched[2], fetched[3:]
             # argmax to convert from one-hot
             state, reward, terminal, info = env.step(action.argmax())
             if render:
+                #input(p)
                 env.render()
 
             # collect the experience

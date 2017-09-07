@@ -44,6 +44,10 @@ def categorical_sample(logits, d):
     value = tf.squeeze(tf.multinomial(logits - tf.reduce_max(logits, [1], keep_dims=True), 1), [1])
     return tf.one_hot(value, d)
 
+def max_sample(logits, d):
+    value = tf.arg_max(logits, dimension=1)
+    return tf.one_hot(value, d)
+
 class LSTMPolicy(object):
     def __init__(self, ob_space, ac_space):
         self.x = x = tf.placeholder(tf.float32, [None] + list(ob_space))
@@ -81,6 +85,8 @@ class LSTMPolicy(object):
         self.vf = tf.reshape(linear(x, 1, "value", normalized_columns_initializer(1.0)), [-1])
         self.state_out = [lstm_c[:1, :], lstm_h[:1, :]]
         self.sample = categorical_sample(self.logits, ac_space)[0, :]
+        self.max_sample = max_sample(self.logits, ac_space)[0, :]
+        self.p = tf.nn.softmax(self.logits - tf.reduce_max(self.logits, [1], keep_dims=True))
         self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, tf.get_variable_scope().name)
 
     def get_initial_features(self):
@@ -88,7 +94,12 @@ class LSTMPolicy(object):
 
     def act(self, ob, c, h):
         sess = tf.get_default_session()
-        return sess.run([self.sample, self.vf] + self.state_out,
+        return sess.run([self.sample, self.vf, self.p] + self.state_out,
+                        {self.x: [ob], self.state_in[0]: c, self.state_in[1]: h})
+
+    def act_determate(self, ob, c, h):
+        sess = tf.get_default_session()
+        return sess.run([self.max_sample, self.vf, self.p] + self.state_out,
                         {self.x: [ob], self.state_in[0]: c, self.state_in[1]: h})
 
     def value(self, ob, c, h):
