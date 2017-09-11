@@ -186,8 +186,8 @@ should be computed.
             pi_loss = - tf.reduce_mean(tf.reduce_sum(log_prob_tf * self.ac, [1]) * self.adv)
 
             # loss of value function
-            vf_loss = 0.5 * tf.reduce_sum(tf.square(pi.vf - self.r))
-            entropy = - tf.reduce_sum(prob_tf * log_prob_tf)
+            vf_loss = 0.5 * tf.reduce_mean(tf.square(pi.vf - self.r))
+            entropy = - tf.reduce_mean(prob_tf * log_prob_tf)
 
             bs = tf.to_float(tf.shape(pi.x)[0])
             self.loss = pi_loss + 0.5 * vf_loss - entropy * 0.01
@@ -204,18 +204,18 @@ should be computed.
             grads = tf.gradients(self.loss, pi.var_list)
 
             if use_tf12_api:
-                tf.summary.scalar("model/policy_loss", pi_loss / bs)
-                tf.summary.scalar("model/value_loss", vf_loss / bs)
-                tf.summary.scalar("model/entropy", entropy / bs)
+                tf.summary.scalar("model/policy_loss", pi_loss)
+                tf.summary.scalar("model/value_loss", vf_loss)
+                tf.summary.scalar("model/entropy", entropy)
                 # tf.summary.image("model/state", tf.concat(3,[pi.x,pi.x]))
                 tf.summary.scalar("model/grad_global_norm", tf.global_norm(grads))
                 tf.summary.scalar("model/var_global_norm", tf.global_norm(pi.var_list))
                 self.summary_op = tf.summary.merge_all()
 
             else:
-                tf.scalar_summary("model/policy_loss", pi_loss / bs)
-                tf.scalar_summary("model/value_loss", vf_loss / bs)
-                tf.scalar_summary("model/entropy", entropy / bs)
+                tf.scalar_summary("model/policy_loss", pi_loss)
+                tf.scalar_summary("model/value_loss", vf_loss)
+                tf.scalar_summary("model/entropy", entropy)
                 #tf.image_summary("model/state", pi.x)
                 tf.scalar_summary("model/grad_global_norm", tf.global_norm(grads))
                 tf.scalar_summary("model/var_global_norm", tf.global_norm(pi.var_list))
