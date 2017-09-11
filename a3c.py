@@ -183,7 +183,7 @@ should be computed.
             # the "policy gradients" loss:  its derivative is precisely the policy gradient
             # notice that self.ac is a placeholder that is provided externally.
             # adv will contain the advantages, as calculated in process_rollout
-            pi_loss = - tf.reduce_sum(tf.reduce_sum(log_prob_tf * self.ac, [1]) * self.adv)
+            pi_loss = - tf.reduce_mean(tf.reduce_sum(log_prob_tf * self.ac, [1]) * self.adv)
 
             # loss of value function
             vf_loss = 0.5 * tf.reduce_sum(tf.square(pi.vf - self.r))
